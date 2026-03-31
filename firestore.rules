@@ -1,0 +1,74 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ===============================================================
+    // Fonctions d'aide à la validation
+    // ===============================================================
+    
+    // Vérifie que le document contient uniquement les champs autorisés
+    function hasOnlyAllowedFields(allowedFields) {
+      return request.resource.data.keys().hasOnly(allowedFields);
+    }
+
+    // Vérifie que tous les champs obligatoires sont présents
+    function hasRequiredFields(requiredFields) {
+      return request.resource.data.keys().hasAll(requiredFields);
+    }
+
+    // Valide qu'un champ est une chaîne de caractères avec une taille limite (Protection Anti-Spam/DoS)
+    function isValidString(field, minLen, maxLen) {
+      return request.resource.data[field] is string &&
+             request.resource.data[field].size() >= minLen &&
+             request.resource.data[field].size() <= maxLen;
+    }
+
+    // Valide le format de l'email
+    function isValidEmail(emailField) {
+      return request.resource.data[emailField] is string &&
+             request.resource.data[emailField].matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$") &&
+             request.resource.data[emailField].size() <= 100;
+    }
+
+    // ===============================================================
+    // Validation du modèle de données "Registration"
+    // ===============================================================
+    
+    function isValidRegistration() {
+      let allowedFields = ['fullName', 'phone', 'birthDate', 'birthPlace', 'nationality', 'residenceRegion', 'email', 'studyLevel', 'profile', 'createdAt', 'status'];
+      
+      return hasOnlyAllowedFields(allowedFields) &&
+             hasRequiredFields(allowedFields) &&
+             isValidString('fullName', 2, 100) &&
+             isValidString('phone', 5, 20) &&
+             isValidString('birthDate', 8, 15) &&
+             isValidString('birthPlace', 2, 100) &&
+             isValidString('nationality', 2, 100) &&
+             isValidString('residenceRegion', 2, 100) &&
+             isValidEmail('email') &&
+             // Validation stricte des listes déroulantes
+             request.resource.data.studyLevel in ['Bac', 'Licence', 'Master', 'Doctorat', 'Autre'] &&
+             request.resource.data.profile in ['Étudiant', 'Professionnel', 'Chercheur d\'emploi'] &&
+             // Le statut doit obligatoirement être 'pending' à la création
+             request.resource.data.status == 'pending' &&
+             // Le timestamp doit être l'heure exacte du serveur
+             request.resource.data.createdAt == request.time;
+    }
+
+    // ===============================================================
+    // Règles par Collection
+    // ===============================================================
+
+    function isAdmin() {
+      return request.auth != null && request.auth.token.email == "academyairesearch@gmail.com";
+    }
+
+    match /registrations/{registrationId} {
+      // AUTORISÉ : L'administrateur peut lire, modifier et supprimer les inscriptions.
+      allow read, update, delete: if isAdmin();
+
+      // AUTORISÉ : N'importe qui peut créer une inscription, MAIS uniquement si les données sont 100% valides.
+      allow create: if isValidRegistration();
+    }
+  }
+}

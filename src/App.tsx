@@ -306,13 +306,13 @@ const Modules = () => (
           },
           {
             title: "Visualisation",
-            desc: "Transformez des tableaux complexes en graphiques parlants avec Excel et Sphinx.",
+            desc: "Transformez des tableaux complexes en graphiques parlants avec SphinxV5plus et SPSS.",
             icon: <Layout className="w-6 h-6" />,
             color: "bg-pink-500"
           },
           {
             title: "Analyse Avancée",
-            desc: "Utilisez SPSS, STATA et Sphinx pour des analyses statistiques et prédictions fiables.",
+            desc: "Utilisez SPSS et SphinxV5plus pour des analyses statistiques et prédictions fiables.",
             icon: <LineChart className="w-6 h-6" />,
             color: "bg-emerald-500"
           }
@@ -334,9 +334,7 @@ const Tools = () => {
   const tools = [
     { name: 'KoboToolbox', icon: <Smartphone className="w-6 h-6" />, color: "text-orange-500", bg: "bg-orange-50" },
     { name: 'SPSS', icon: <Sigma className="w-6 h-6" />, color: "text-blue-600", bg: "bg-blue-50" },
-    { name: 'Sphinx', icon: <Search className="w-6 h-6" />, color: "text-indigo-600", bg: "bg-indigo-50" },
-    { name: 'STATA', icon: <Table className="w-6 h-6" />, color: "text-red-600", bg: "bg-red-50" },
-    { name: 'Excel', icon: <FileSpreadsheet className="w-6 h-6" />, color: "text-emerald-600", bg: "bg-emerald-50" },
+    { name: 'SphinxV5plus', icon: <Search className="w-6 h-6" />, color: "text-indigo-600", bg: "bg-indigo-50" }
   ];
 
   return (
@@ -346,7 +344,7 @@ const Tools = () => {
           <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">La Boîte à Outils</h2>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {tools.map((tool, i) => (
             <div key={i} className="bg-white p-6 rounded-2xl border border-slate-100 text-center hover:shadow-md transition-all group">
               <div className={`${tool.bg} ${tool.color} w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform`}>
@@ -489,7 +487,7 @@ const FAQ = () => {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
   const questions = [
     { q: "Prérequis ?", a: "Aucun, nous reprenons les bases." },
-    { q: "Logiciels ?", a: "KoboToolbox, SPSS, Sphinx, STATA et Excel fournis." },
+    { q: "Logiciels ?", a: "KoboToolbox, SPSS et SphinxV5plus fournis." },
     { q: "Certification ?", a: "Oui, attestation reconnue délivrée." },
     { q: "Format ?", a: "Théorie et pratique sur cas réels." }
   ];
@@ -720,12 +718,12 @@ const BrochureModal = ({ isOpen, onClose, onStartRegistration }: { isOpen: boole
                     { 
                       num: "02", 
                       title: "Traitement & Analyse", 
-                      details: "SPSS & STATA : Analyses descriptives, tests d'hypothèses et modélisation statistique." 
+                      details: "SPSS : Analyses descriptives, tests d'hypothèses et modélisation statistique." 
                     },
                     { 
                       num: "03", 
                       title: "Visualisation & Reporting", 
-                      details: "Excel Avancé & Sphinx : Tableaux de bord dynamiques et rédaction de rapports stratégiques." 
+                      details: "SphinxV5plus : Tableaux de bord dynamiques et rédaction de rapports stratégiques." 
                     }
                   ].map((m, i) => (
                     <div key={i} className="flex gap-4 sm:gap-6 items-start border-b border-slate-100 pb-4 sm:pb-6 last:border-0">
@@ -744,7 +742,7 @@ const BrochureModal = ({ isOpen, onClose, onStartRegistration }: { isOpen: boole
                 <section>
                   <h2 className="text-indigo-600 font-black text-[10px] sm:text-sm uppercase tracking-widest mb-3 sm:mb-4">Outils Maîtrisés</h2>
                   <ul className="grid grid-cols-2 gap-2">
-                    {['KoboToolbox', 'IBM SPSS', 'STATA 18', 'Sphinx iQ3', 'Excel Pro'].map((tool, i) => (
+                    {['KoboToolbox', 'SPSS', 'SphinxV5plus'].map((tool, i) => (
                       <li key={i} className="flex items-center gap-2 text-xs sm:text-sm text-slate-600 font-medium">
                         <div className="w-1 h-1 rounded-full bg-indigo-400" /> {tool}
                       </li>
@@ -1291,15 +1289,15 @@ const RegistrationModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: () =
                         <div className="space-y-3">
                           <div className="flex gap-3 items-start">
                             <div className="w-5 h-5 rounded bg-indigo-50 flex items-center justify-center text-indigo-600 text-[10px] font-bold mt-0.5">01</div>
-                            <p className="text-xs text-slate-600"><span className="font-bold text-slate-900">Collecte & Digitalisation :</span> KoboToolbox & ODK</p>
+                            <p className="text-xs text-slate-600"><span className="font-bold text-slate-900">Collecte & Digitalisation :</span> KoboToolbox</p>
                           </div>
                           <div className="flex gap-3 items-start">
                             <div className="w-5 h-5 rounded bg-indigo-50 flex items-center justify-center text-indigo-600 text-[10px] font-bold mt-0.5">02</div>
-                            <p className="text-xs text-slate-600"><span className="font-bold text-slate-900">Traitement & Analyse :</span> SPSS, STATA & Sphinx</p>
+                            <p className="text-xs text-slate-600"><span className="font-bold text-slate-900">Traitement & Analyse :</span> SPSS & SphinxV5plus</p>
                           </div>
                           <div className="flex gap-3 items-start">
                             <div className="w-5 h-5 rounded bg-indigo-50 flex items-center justify-center text-indigo-600 text-[10px] font-bold mt-0.5">03</div>
-                            <p className="text-xs text-slate-600"><span className="font-bold text-slate-900">Visualisation :</span> Excel Avancé & Tableaux de bord</p>
+                            <p className="text-xs text-slate-600"><span className="font-bold text-slate-900">Visualisation :</span> Tableaux de bord dynamiques</p>
                           </div>
                         </div>
                       </section>

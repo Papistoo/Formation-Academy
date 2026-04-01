@@ -883,16 +883,6 @@ const RegistrationModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: () =
       try {
         const normalizedEmail = formData.email.toLowerCase().trim();
         const docRef = doc(db, 'registrations', normalizedEmail);
-        
-        // Vérification côté client pour empêcher les doublons
-        const docSnap = await getDoc(docRef);
-        if (docSnap.exists()) {
-          const msg = "Une candidature avec cette adresse email a déjà été soumise.";
-          setError(msg);
-          toast.error(msg);
-          setIsSubmitting(false);
-          return;
-        }
 
         await setDoc(docRef, {
           ...formData,

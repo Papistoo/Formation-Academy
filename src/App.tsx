@@ -45,7 +45,7 @@ import {
 } from 'recharts';
 import React, { useState, FormEvent, useRef, useEffect } from "react";
 import html2pdf from 'html2pdf.js';
-import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from './firebase';
 import { Toaster, toast } from 'sonner';
 import { getFirebaseErrorMessage } from './utils/firebaseErrors';
@@ -765,7 +765,19 @@ const RegistrationModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: () =
       setError('');
       try {
         const normalizedEmail = formData.email.toLowerCase().trim();
-        await setDoc(doc(db, 'registrations', normalizedEmail), {
+        const docRef = doc(db, 'registrations', normalizedEmail);
+        
+        // Vérification côté client pour empêcher les doublons
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+          const msg = "Une candidature avec cette adresse email a déjà été soumise.";
+          setError(msg);
+          toast.error(msg);
+          setIsSubmitting(false);
+          return;
+        }
+
+        await setDoc(docRef, {
           ...formData,
           email: normalizedEmail,
           createdAt: serverTimestamp(),

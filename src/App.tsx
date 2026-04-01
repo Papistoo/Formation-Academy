@@ -35,7 +35,9 @@ import {
   Mail,
   Printer,
   QrCode,
-  Globe
+  Globe,
+  MessageCircle,
+  Send
 } from "lucide-react";
 import { 
   LineChart as ReLineChart, 
@@ -45,7 +47,7 @@ import {
 } from 'recharts';
 import React, { useState, FormEvent, useRef, useEffect } from "react";
 import html2pdf from 'html2pdf.js';
-import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
+import { doc, setDoc, getDoc, addDoc, collection, serverTimestamp } from 'firebase/firestore';
 import { db } from './firebase';
 import { Toaster, toast } from 'sonner';
 import { getFirebaseErrorMessage } from './utils/firebaseErrors';
@@ -80,6 +82,7 @@ const Navbar = ({ onStartRegistration }: { onStartRegistration: () => void }) =>
             <a href="#temoignages" className="hover:text-indigo-600 transition-colors">Avis</a>
             <a href="#tarifs" className="hover:text-indigo-600 transition-colors">Tarifs</a>
             <a href="#faq" className="hover:text-indigo-600 transition-colors">FAQ</a>
+            <a href="#contact" className="hover:text-indigo-600 transition-colors">Contact</a>
           </div>
 
           <div className="flex items-center gap-4">
@@ -111,6 +114,7 @@ const Navbar = ({ onStartRegistration }: { onStartRegistration: () => void }) =>
           <a href="#temoignages" onClick={() => setIsMenuOpen(false)} className="block hover:text-indigo-600">Avis</a>
           <a href="#tarifs" onClick={() => setIsMenuOpen(false)} className="block hover:text-indigo-600">Tarifs</a>
           <a href="#faq" onClick={() => setIsMenuOpen(false)} className="block hover:text-indigo-600">FAQ</a>
+          <a href="#contact" onClick={() => setIsMenuOpen(false)} className="block hover:text-indigo-600">Contact</a>
           <button 
             onClick={() => { setIsMenuOpen(false); onStartRegistration(); }}
             className="block w-full bg-indigo-600 text-white py-3 rounded-xl"
@@ -519,6 +523,85 @@ const FAQ = () => {
   );
 };
 
+const Contact = () => {
+  const [formData, setFormData] = useState({ name: '', email: '', subject: '', message: '' });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    try {
+      await addDoc(collection(db, 'messages'), {
+        ...formData,
+        createdAt: serverTimestamp(),
+        status: 'unread'
+      });
+      toast.success("Message envoyé avec succès ! Nous vous répondrons très vite.");
+      setFormData({ name: '', email: '', subject: '', message: '' });
+    } catch (error) {
+      console.error("Error sending message:", error);
+      toast.error(getFirebaseErrorMessage(error));
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <section id="contact" className="py-20 bg-slate-50">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center mb-12">
+          <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">Contactez-nous</h2>
+          <p className="text-lg text-slate-600">Une question ? N'hésitez pas à nous écrire.</p>
+        </div>
+        <div className="bg-white rounded-3xl shadow-sm border border-slate-100 p-8 md:p-12">
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <label className="text-sm font-bold text-slate-700">Nom complet</label>
+                <input required type="text" className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-bold text-slate-700">Email</label>
+                <input required type="email" className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-bold text-slate-700">Sujet</label>
+              <input required type="text" className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all" value={formData.subject} onChange={e => setFormData({...formData, subject: e.target.value})} />
+            </div>
+            <div className="space-y-2">
+              <div className="flex justify-between items-center">
+                <label className="text-sm font-bold text-slate-700">Message</label>
+                <span className="text-xs text-slate-500">{formData.message.length}/100</span>
+              </div>
+              <textarea required maxLength={100} rows={5} className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all resize-none" value={formData.message} onChange={e => setFormData({...formData, message: e.target.value})} />
+            </div>
+            <button type="submit" disabled={isSubmitting} className="w-full bg-indigo-600 text-white py-4 rounded-xl font-bold text-lg hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-100 flex items-center justify-center gap-2 disabled:opacity-70">
+              {isSubmitting ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <Send className="w-5 h-5" />}
+              {isSubmitting ? 'Envoi en cours...' : 'Envoyer le message'}
+            </button>
+          </form>
+        </div>
+      </div>
+    </section>
+  );
+};
+
+const WhatsAppButton = () => (
+  <a
+    href="https://wa.me/22796990497"
+    target="_blank"
+    rel="noopener noreferrer"
+    className="fixed bottom-6 right-6 z-50 bg-[#25D366] text-white p-4 rounded-full shadow-lg hover:bg-[#20bd5a] hover:scale-110 transition-all duration-300 flex items-center justify-center group"
+    aria-label="Contactez-nous sur WhatsApp"
+  >
+    <MessageCircle className="w-7 h-7" />
+    <span className="absolute right-full mr-4 bg-white text-slate-800 text-sm font-bold px-4 py-2 rounded-xl shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none whitespace-nowrap">
+      Discutons sur WhatsApp
+    </span>
+  </a>
+);
+
 const Footer = ({ onOpenAdmin }: { onOpenAdmin: () => void }) => (
   <footer className="py-12 bg-white border-t border-slate-50">
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -534,6 +617,7 @@ const Footer = ({ onOpenAdmin }: { onOpenAdmin: () => void }) => (
           <a href="#temoignages" className="hover:text-indigo-600">Avis</a>
           <a href="#tarifs" className="hover:text-indigo-600">Tarifs</a>
           <a href="#faq" className="hover:text-indigo-600">FAQ</a>
+          <a href="#contact" className="hover:text-indigo-600">Contact</a>
         </div>
 
         <div className="flex items-center gap-4">
@@ -758,11 +842,44 @@ const RegistrationModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: () =
 
   const handleNextStep = async (e: FormEvent) => {
     e.preventDefault();
+    setError('');
+
+    // Validation par étape
+    if (formStep === 1) {
+      const nameParts = formData.fullName.trim().split(/\s+/);
+      if (nameParts.length < 2) {
+        setError("Veuillez saisir au moins votre prénom et votre nom, séparés par un espace.");
+        return;
+      }
+    }
+
+    if (formStep === 2) {
+      if (!/^\d{8}$/.test(formData.phone)) {
+        setError("Le numéro de téléphone doit contenir exactement 8 chiffres.");
+        return;
+      }
+    }
+
+    if (formStep === 3) {
+      const dateRegex = /^(\d{2})-(\d{2})-(\d{4})$/;
+      if (!dateRegex.test(formData.birthDate)) {
+        setError("La date de naissance doit être au format JJ-MM-AAAA (ex: 25-12-1998).");
+        return;
+      }
+      const [, day, month, year] = formData.birthDate.match(dateRegex) || [];
+      const d = parseInt(day, 10);
+      const m = parseInt(month, 10);
+      const y = parseInt(year, 10);
+      if (m < 1 || m > 12 || d < 1 || d > 31 || y < 1900 || y > new Date().getFullYear()) {
+        setError("Veuillez saisir une date de naissance valide.");
+        return;
+      }
+    }
+
     if (formStep < totalSteps) {
       setFormStep(formStep + 1);
     } else {
       setIsSubmitting(true);
-      setError('');
       try {
         const normalizedEmail = formData.email.toLowerCase().trim();
         const docRef = doc(db, 'registrations', normalizedEmail);
@@ -948,10 +1065,14 @@ const RegistrationModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: () =
                             <input 
                               required
                               type="tel" 
-                              placeholder="+227 00 00 00 00"
+                              maxLength={8}
+                              placeholder="Ex: 96990497"
                               className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
                               value={formData.phone}
-                              onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                              onChange={(e) => {
+                                const val = e.target.value.replace(/\D/g, '').slice(0, 8);
+                                setFormData({...formData, phone: val});
+                              }}
                             />
                           </div>
                           <div className="space-y-1.5">
@@ -974,10 +1095,21 @@ const RegistrationModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: () =
                             <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Date de naissance</label>
                             <input 
                               required
-                              type="date" 
+                              type="text" 
+                              maxLength={10}
+                              placeholder="JJ-MM-AAAA"
                               className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
                               value={formData.birthDate}
-                              onChange={(e) => setFormData({...formData, birthDate: e.target.value})}
+                              onChange={(e) => {
+                                let val = e.target.value.replace(/\D/g, '');
+                                if (val.length > 8) val = val.slice(0, 8);
+                                if (val.length > 4) {
+                                  val = `${val.slice(0, 2)}-${val.slice(2, 4)}-${val.slice(4)}`;
+                                } else if (val.length > 2) {
+                                  val = `${val.slice(0, 2)}-${val.slice(2)}`;
+                                }
+                                setFormData({...formData, birthDate: val});
+                              }}
                             />
                           </div>
                           <div className="space-y-1.5">
@@ -1269,8 +1401,10 @@ export default function App() {
         <Testimonials />
         <Pricing onStartRegistration={() => setIsRegistrationOpen(true)} />
         <FAQ />
+        <Contact />
       </main>
       <Footer onOpenAdmin={() => setIsAdminOpen(true)} />
+      <WhatsAppButton />
       <BrochureModal 
         isOpen={isBrochureOpen} 
         onClose={() => setIsBrochureOpen(false)} 

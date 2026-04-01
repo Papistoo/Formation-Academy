@@ -45,7 +45,7 @@ import {
 } from 'recharts';
 import React, { useState, FormEvent, useRef, useEffect } from "react";
 import html2pdf from 'html2pdf.js';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from './firebase';
 import { Toaster, toast } from 'sonner';
 import { getFirebaseErrorMessage } from './utils/firebaseErrors';
@@ -764,16 +764,21 @@ const RegistrationModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: () =
       setIsSubmitting(true);
       setError('');
       try {
-        await addDoc(collection(db, 'registrations'), {
+        const normalizedEmail = formData.email.toLowerCase().trim();
+        await setDoc(doc(db, 'registrations', normalizedEmail), {
           ...formData,
+          email: normalizedEmail,
           createdAt: serverTimestamp(),
           status: 'pending'
         });
         setStep('receipt');
         toast.success("Candidature soumise avec succès !");
-      } catch (err) {
+      } catch (err: any) {
         console.error("Error adding document: ", err);
-        const msg = getFirebaseErrorMessage(err);
+        let msg = getFirebaseErrorMessage(err);
+        if (err?.code === 'permission-denied') {
+          msg = "Une inscription avec cet email existe déjà ou les informations sont invalides.";
+        }
         setError(msg);
         toast.error(msg);
       } finally {
